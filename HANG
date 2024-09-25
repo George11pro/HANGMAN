@@ -1,0 +1,130 @@
+import random
+
+ALPHABET = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'
+
+hangman_states = [
+    """
+       -----
+       |   |
+           |
+           |
+           |
+           |
+    --------
+    """,
+    """
+       -----
+       |   |
+       O   |
+           |
+           |
+           |
+    --------
+    """,
+    """
+       -----
+       |   |
+       O   |
+       |   |
+           |
+           |
+    --------
+    """,
+    """
+       -----
+       |   |
+       O   |
+      /|   |
+           |
+           |
+    --------
+    """,
+    """
+       -----
+       |   |
+       O   |
+      /|\\  |
+           |
+           |
+    --------
+    """,
+    """
+       -----
+       |   |
+       O   |
+      /|\\  |
+      /    |
+           |
+    --------
+    """,
+    """
+       -----
+       |   |
+       O   |
+      /|\\  |
+      / \\  |
+           |
+    --------
+    """,
+]
+
+def select_word():
+    with open('predictory.txt', 'r', encoding='utf-8') as f: # функция открывает файл в режиме чтения 
+        word = f.readlines()   
+    chosen_word = random.choice(word).strip().lower() # функция из модуля выбирает случайное слов
+    return chosen_word
+
+def validate_input(user_input):
+    return user_input in ['1', '2']
+
+def start_game():
+    while True: # фнкция проверяет выбрал ли пользователь новую игру или выход
+        print('Хотите начать новую игру(1) или выйти(2)? \nВведите 1|2 ...')
+        digit = input()
+        while not validate_input(digit):
+            print('Неверный выбор. Пожалуйста, введите "1" или "2".')
+            digit = input()
+        if digit == '1':
+            play_game()
+        elif digit == '2':
+            print('Выход')
+            break
+
+def play_game():
+    chosen_word = select_word()
+    used_letters = []
+    attempts = 6
+    
+    while attempts > 0:
+        print(hangman_states[6 - attempts])  # выводит текущее состояние виселицы
+        print(f"Использованные буквы: {', '.join(used_letters)}")
+        
+        current_state = ''.join([char if char in used_letters else '_' for char in chosen_word]) # Отображение текущего состояния слова
+        print(f"Текущее слово: {current_state}")
+
+        guessed_letter = input("Введите букву: ").lower() 
+
+        if len(guessed_letter) != 1 or not guessed_letter.isalpha(): # проверят на ввод одного символа из алфавита
+            print("Введите одну букву.")
+            continue
+        
+        if guessed_letter in used_letters: # проверка на повторность ввода
+            print("Эта буква уже использовалась. Пожалуйста, введите другую букву.")
+            continue
+        
+        used_letters.append(guessed_letter)
+
+        if guessed_letter in chosen_word: # проверяет на присутствие вводимой буквы в загаданном слове
+            print(f"Буква '{guessed_letter}' присутствует в слове.")
+            if all(char in used_letters for char in chosen_word): # все введнные буквы находятся в загаданном слове
+                print(f'Вы выиграли! Загаданное слово: "{chosen_word}"')
+                break
+        else:
+            attempts -= 1
+            print(f"Буква '{guessed_letter}' отсутствует в слове. Осталось попыток: {attempts}")
+            if attempts == 0:
+                print(hangman_states[6])
+                print(f'Вы проиграли! Загаданное слово: "{chosen_word}"')
+
+# Старт игры
+start_game()
